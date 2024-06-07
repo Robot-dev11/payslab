@@ -18,7 +18,9 @@ const Users = () => {
             }
         })
             .then(response => {
-                setUsers(response.data.user)
+                setUsers(response.data.user.filter((user) => {
+                    return user.firstName !== localStorage.getItem('firstName') || user.lastName !== localStorage.getItem('lastName')
+                }))
             })
     }, [filter])
 

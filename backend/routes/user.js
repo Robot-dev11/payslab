@@ -105,7 +105,9 @@ router.post('/signin', async (req, res) => {
             }, JWT_SECRET)
     
             return res.status(200).json({
-                token: token
+                token: token,
+                firstName: user.firstName,
+                lastName: user.lastName
             })
         } else {
             return res.status(400).json({
@@ -150,7 +152,6 @@ router.get('/bulk', authMiddelware, async(req, res) => {
         const filter = req.query.filter || ""
 
         const regex = new RegExp(filter, 'i')
-        console.log(regex);
 
         const users = await User.find({
             $or: [{
@@ -165,7 +166,6 @@ router.get('/bulk', authMiddelware, async(req, res) => {
             }]
         })
 
-        console.log(users)
 
         if(users.length == 0) {
             return res.status(404).json({

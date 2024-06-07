@@ -34,6 +34,8 @@ export const SignIn = () => {
                                 password
                             });
                             localStorage.setItem('token', response.data.token)
+                            localStorage.setItem('firstName', response.data.firstName)
+                            localStorage.setItem('lastName', response.data.lastName)
                             navigate("/dashboard")
                         }} label={"Sign In"} />
                     </div>
