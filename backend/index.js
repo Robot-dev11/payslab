@@ -4,6 +4,7 @@ const PORT = process.env.PORT || 3000
 const rootRouter = require('./routes/index');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const swaggerDoc = require('./utils/swagger')
 
 
 
@@ -25,4 +26,6 @@ async function main(){
 app.listen(PORT, err => {
     if(err) console.log(err);
     console.log(" Server Listening on PORT: ", PORT);
+
+    swaggerDoc(app, PORT);
 })
