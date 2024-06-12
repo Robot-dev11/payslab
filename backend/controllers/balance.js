@@ -8,7 +8,7 @@ module.exports = {
         try {
             const account = await Account.findOne({
                 userId: req.userId
-            })
+            }).lean().exec(); 
             res.status(200).json({
                 balance: account.balance
             })
@@ -27,31 +27,40 @@ module.exports = {
         session.startTransaction();
         const { amount, to } = req.body;
 
-        const account = await Account.findOne({ userId: req.userId }).session(session);
+        try {
+            const account = await Account.findOne({ userId: req.userId }).session(session);
+            if (!account || account.balance < amount) {
+                await session.abortTransaction();
+                return res.status(400).json({
+                    message: "Insufficient balance"
+                });
+            }
 
-        if (!account || account.balance < amount) {
-            await session.abortTransaction();
-            return res.status(400).json({
-                message: "Insufficient balance"
+            const toAccount = await Account.findOne({ userId: to }).session(session);
+
+            if (!toAccount) {
+                await session.abortTransaction();
+                return res.status(400).json({
+                    message: "Invalid account"
+                });
+            }
+
+            await Account.updateOne({ userId: req.userId }, { $inc: { balance: -amount } }, {new : true}).session(session);
+            await Account.updateOne({ userId: to }, { $inc: { balance: amount } }, {new: true}).session(session);
+            const updatedAccount = await Account.findOne({ userId: req.userId }).session(session);
+
+            await session.commitTransaction();
+            session.endSession();
+            res.json({
+                message: "Transfer successful",
+                currentBalance: updatedAccount.balance
             });
-        }
-
-        const toAccount = await Account.findOne({ userId: to }).session(session);
-
-        if (!toAccount) {
+        } catch (err ){
             await session.abortTransaction();
-            return res.status(400).json({
-                message: "Invalid account"
-            });
+            session.endSession();
+            console.error(error);
+            res.status(500).json({ message: "Transaction failed" });
         }
-
-        await Account.updateOne({ userId: req.userId }, { $inc: { balance: -amount } }, {new : true}).session(session);
-        await Account.updateOne({ userId: to }, { $inc: { balance: amount } }, {new: true}).session(session);
-
-        await session.commitTransaction();
-        res.json({
-            message: "Transfer successful"
-        });
 
     }
 }
