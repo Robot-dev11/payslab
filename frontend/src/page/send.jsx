@@ -50,7 +50,9 @@ export const SendMoney = () => {
                                 Authorization: `Bearer ${localStorage.token}`
                             }
                         })
-                        navigate('/dashboard')
+                        setInterval(() => {
+                            console.log("after 10 sec")
+                            navigate('/dashboard')}, 2000);
                     }} className="justify-center rounded-md text-sm font-medium ring-offset-background transition-colors h-10 px-4 py-2 w-full bg-green-500 text-white">
                         Initiate Transfer
                     </button>
